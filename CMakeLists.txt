@@ -5,6 +5,14 @@ find_package ( Qt4 REQUIRED )
 
 include ( ${QT_USE_FILE} )
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    message(STATUS "Adding -std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+    message(STATUS "Adding -std=c11")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+endif()
 
 include_directories(${src_dir}/vartypes)
 include_directories(${src_dir}/vartypes/primitives)
