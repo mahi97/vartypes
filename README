@@ -1,9 +1,11 @@
 ========================================================================
- VarTypes
+ VarTypes OSX Version
  Author:  Stefan Zickler <http://szickler.net>, (C) 2007-2015
+ Author:  Mohammad Mahdi Rahimi <http://szickler.net>, (C) 2018-2019
  Available at: https://github.com/szi/vartypes
  (Formerly at: http://code.google.com/p/vartypes/)
 ========================================================================
+
  This software is free: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License Version 3,
  as published by the Free Software Foundation.
@@ -22,7 +24,7 @@
  Changelog:
  12/23/15 - v0.8 - Fixed Issue #2 (VarIntVal constructor was checking
                    _val before it was set)
-                 - Made shared_ptr explicitly use std::tr1 namespace
+                 - Made shared_ptr explicitly use std namespace
                  - Cleanup in VarTypesFactory
                  - Added import/export options
                  - More coherent use of shared_ptr
@@ -33,7 +35,7 @@
                  - Integrated example into CMakeLists.txt and removed
                    .pro build file.
  06/10/11 - v0.7 - Changed to shared_ptr model for all VarTypes.
-                 - VarTypes now requires the tr1 C++ extensions.
+                 - VarTypes now requires the C++ extensions.
  10/25/10 - v0.6 - Re-licensed from GPL to LGPL, so VarTypes can now be
                    used in commercial applications.
                  - Added CMake files for building shared library.
@@ -102,7 +104,7 @@
               More complex types can be added easily by inheriting the
               VarData base-class.
 
- Requires:    cmake, Qt >=4.5, C++ tr1 libraries (automatically supplied by
+ Requires:    cmake, Qt >=4.5, C++ libraries (automatically supplied by
               many modern compilers).
 
  Usage:       The VarTypes library can be built by running:
