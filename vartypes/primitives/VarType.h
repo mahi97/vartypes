@@ -44,7 +44,10 @@
 #include <QFileInfo>
 #include <QDir>
 
-//Would use QSharedPointer instead of the boost versions, but enable_shared_from_this is not yet implemented in Qt which is a functionality that we need as we have vartypes generating events with pointers to themselves.
+// Use std::shared_ptr together with std::enable_shared_from_this for VarType
+// ownership. We do not use QSharedPointer here because this code needs
+// enable_shared_from_this-style self-references when vartypes generate events
+// carrying pointers to themselves.
 #include <memory>
 //#include <bits/algorithmfwd.h>
 #include <QApplication>
