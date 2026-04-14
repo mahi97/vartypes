@@ -1,24 +1,19 @@
-project(vartypes)
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.16)
+project(vartypes VERSION 0.8.0 LANGUAGES CXX C)
 
-find_package ( Qt4 REQUIRED )
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
-include ( ${QT_USE_FILE} )
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    message(STATUS "Adding -std=c++11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
-    message(STATUS "Adding -std=c11")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-endif()
+# Try Qt6 first, then fall back to Qt5
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
 
-include_directories(${src_dir}/vartypes)
-include_directories(${src_dir}/vartypes/primitives)
-include_directories(${src_dir}/vartypes/enhanced)
-include_directories(${src_dir}/vartypes/gui)
-include_directories(${src_dir}/vartypes/xml)
+message(STATUS "Using Qt ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}")
 
 set(src_dir .)
 
@@ -36,7 +31,7 @@ set (SRCS
   ${src_dir}/vartypes/primitives/VarVal.cpp
   ${src_dir}/vartypes/primitives/VarIntVal.cpp
   ${src_dir}/vartypes/primitives/VarDoubleVal.cpp
-  
+
   ${src_dir}/vartypes/primitives/VarType.cpp
   ${src_dir}/vartypes/primitives/VarBlob.cpp
   ${src_dir}/vartypes/primitives/VarBool.cpp
@@ -63,13 +58,6 @@ set (SRCS
   ${src_dir}/vartypes/primitives/VarAny.cpp
 )
 
-include_directories(${src_dir}/vartypes)
-include_directories(${src_dir}/vartypes/primitives)
-include_directories(${src_dir}/vartypes/gui)
-include_directories(${src_dir}/vartypes/xml)
-
-
-#only ones that need to be moc'ed
 set (HEADERS
   ${src_dir}/vartypes/primitives/VarType.h
   ${src_dir}/vartypes/primitives/VarBlob.h
@@ -116,52 +104,67 @@ set (INSTALLABLE_DOCFILES
   ${src_dir}/COPYING
 )
 
-set (INSTALLABLE_EXAMPLE
-  ${src_dir}/README
-  ${src_dir}/COPYING
-)
-
-
 set (RC
   ${src_dir}/vartypes/gui/icons/icons.qrc
-)
-
-qt4_wrap_cpp (MOC_SRCS
-  ${HEADERS}
-)
-
-qt4_add_resources(RC_SRCS 
-  ${RC}
 )
 
 #flags to set in debug mode
 set (CMAKE_CXX_FLAGS_DEBUG "-g")
 
 #flags to set in release mode
-set (CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -march=native")
+if(NOT MSVC)
+  set (CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
+else()
+  set (CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /O2")
+endif()
 
-set (libs ${QT_LIBRARIES})
-
+# Place all runtime binaries (executables, DLLs) in a common directory so that
+# on Windows, executables can find the shared library without PATH changes.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 SET(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Output directory for libraries")
 SET(CMAKE_INSTALL_INCLUDEDIR include CACHE PATH "Output directory for header files")
 SET(CMAKE_INSTALL_DOCDIR share/doc CACHE PATH "Output directory for documentation and license files")
 
 set (target vartypes)
-add_library(${target} SHARED ${MOC_SRCS} ${SRCS} ${RC_SRCS})
-set_target_properties(${target} PROPERTIES VERSION 0.8.0 SOVERSION 1)
-target_link_libraries(${target} ${libs})
+add_library(${target} SHARED ${SRCS} ${HEADERS} ${RC})
+set_target_properties(${target} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
+target_include_directories(${target} PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes
+  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes/primitives
+  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes/gui
+  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes/xml
+)
+target_link_libraries(${target} PUBLIC
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Gui
+  Qt${QT_VERSION_MAJOR}::Widgets
+)
+
+# Windows DLL export
+if(WIN32)
+  set_target_properties(${target} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 set (example_target vartype_example)
 set (example_dir example)
-qt4_wrap_cpp (EXAMPLE_MOC_SRCS ${example_dir}/src/mainwindow.h)
 
 add_executable(${example_target}
-               ${EXAMPLE_MOC_SRCS}
+               ${example_dir}/src/mainwindow.h
                ${example_dir}/src/mainwindow.cpp
                ${example_dir}/src/example.cpp)
-               
-target_link_libraries(${example_target} ${libs} ${target})
+
+target_link_libraries(${example_target} PRIVATE ${target})
+
+# ─── Tests ───
+option(BUILD_TESTS "Build unit tests" OFF)
+if(BUILD_TESTS)
+  enable_testing()
+  find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+  add_subdirectory(tests)
+endif()
 
 INSTALL(FILES ${INSTALLABLE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vartypes)
 
@@ -169,5 +172,7 @@ INSTALL(FILES ${INSTALLABLE_DOCFILES} DESTINATION ${CMAKE_INSTALL_DOCDIR}/vartyp
 
 INSTALL(TARGETS ${target}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION bin
 )
 
