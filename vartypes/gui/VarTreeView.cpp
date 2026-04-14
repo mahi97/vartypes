@@ -35,7 +35,7 @@ namespace VarTypes {
     setLayout(l);
     l->addWidget(tw);
     l->addWidget(search_edit);
-    l->setMargin(1);
+    l->setContentsMargins(1, 1, 1, 1);
     l->setSpacing(1);
     result_idx=0;
   

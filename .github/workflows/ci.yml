@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, 'copilot/**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Ubuntu 22.04
+          - os: ubuntu-22.04
+            qt_version: '5.15.2'
+            qt_modules: ''
+          # Ubuntu 24.04
+          - os: ubuntu-24.04
+            qt_version: '5.15.2'
+            qt_modules: ''
+          # Ubuntu 22.04 with Qt6
+          - os: ubuntu-22.04
+            qt_version: '6.5.3'
+            qt_modules: ''
+          # Ubuntu 24.04 with Qt6
+          - os: ubuntu-24.04
+            qt_version: '6.5.3'
+            qt_modules: ''
+          # macOS 14 (arm64)
+          - os: macos-14
+            qt_version: '6.5.3'
+            qt_modules: ''
+          # macOS 15
+          - os: macos-15
+            qt_version: '6.5.3'
+            qt_modules: ''
+          # Windows
+          - os: windows-latest
+            qt_version: '6.5.3'
+            qt_modules: ''
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.qt_version }}
+          modules: ${{ matrix.qt_modules }}
+          cache: true
+
+      - name: Configure (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake -B build -DBUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure -C Release

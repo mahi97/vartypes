@@ -22,10 +22,6 @@
 #include <float.h>
 #include <typeinfo>
 
-#ifdef WIN32
-  typedef unsigned char uint8_t;
-#endif
-
 using namespace std;
 
 namespace VarTypes {

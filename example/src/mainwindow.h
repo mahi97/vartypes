@@ -21,10 +21,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui>
 #include <QSplitter>
 #include <QStringList>
 #include <QMainWindow>
+#include <QCloseEvent>
 
 #include "VarTreeModel.h"
 #include "VarItem.h"

@@ -24,8 +24,11 @@
 #include "VarAnyVal.h"
 #include <QSpinBox>
 #include <sstream>
+
+#ifdef VARTYPES_HAS_BOOST_SERIALIZATION
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#endif
 //#include "serializers.h"
 namespace VarTypes {
   /*!
@@ -182,6 +185,7 @@ namespace VarTypes {
     virtual ~VarAnyProtoObject() {}
   };
   
+#ifdef VARTYPES_HAS_BOOST_SERIALIZATION
   template <class CLASS_VARVAL_TYPE>   
   class VarAnyBoostSerializableObject : public VarAny<CLASS_VARVAL_TYPE>
   {
@@ -268,6 +272,7 @@ namespace VarTypes {
       
     }
   };
+#endif // VARTYPES_HAS_BOOST_SERIALIZATION
   
   
 };
