@@ -97,7 +97,7 @@ namespace VarTypes {
         }
         std::string root_name = basename.baseName().toStdString();
         char cbuf[255];
-        sprintf(cbuf,".%d",unique_adder);
+        snprintf(cbuf, sizeof(cbuf), ".%d", unique_adder);
         std::string adder_string="";
         if (unique_adder>0) {
           adder_string = std::string(".") + cbuf;
@@ -286,7 +286,7 @@ namespace VarTypes {
     }
   
     #ifndef VDATA_NO_THREAD_SAFETY
-      QMutex * _mutex;
+      std::unique_ptr<QMutex> _mutex;
     #endif
     VarTypeFlag _flags;
     string _name;
@@ -311,7 +311,7 @@ namespace VarTypes {
       unlock();
     }
     QMutex * getMutex() const {
-      return _mutex; 
+      return _mutex.get(); 
     }
     
     /// The constructor of a VarType type. If inheriting this class, you should forward the name argument
@@ -730,20 +730,15 @@ namespace VarTypes {
   class SafeVarVal : public virtual CLASS_VARVAL_TYPE {
     protected:
     #ifndef VDATA_NO_THREAD_SAFETY
-      QMutex * _mutex;
+      std::unique_ptr<QMutex> _mutex;
     #endif
     public:
     SafeVarVal() {
       #ifndef VDATA_NO_THREAD_SAFETY
-      _mutex=new QMutex();
+      _mutex = std::make_unique<QMutex>();
       #endif
     }
-    virtual ~SafeVarVal()
-    {
-      #ifndef VDATA_NO_THREAD_SAFETY
-      delete _mutex;
-      #endif
-    }
+    virtual ~SafeVarVal() = default;
     protected:
     virtual inline void lock() const {
       VARTYPE_MACRO_LOCK;

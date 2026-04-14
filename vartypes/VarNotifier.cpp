@@ -19,6 +19,7 @@
 */
 //========================================================================
 #include "VarNotifier.h"
+#include <QMutexLocker>
 
 namespace VarTypes {
   
@@ -33,67 +34,60 @@ namespace VarTypes {
   }
   
   void VarNotifier::clear() {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     QHash<VarType *, VarNotificationType>::const_iterator iter;
     for (iter = senders.constBegin();iter != senders.constEnd();iter++) {
       internalNonMutexedRemoveItem(iter.key());
     }
     senders.clear();
-    mutex.unlock();
   }
   
   bool VarNotifier::hasChanged() {
-    bool result=false;
-    mutex.lock();
-    if (changed) {
-      result=true;
-      changed=false;
-    }
-    mutex.unlock();
+    QMutexLocker locker(&mutex);
+    bool result = changed;
+    changed = false;
     return result;
   }
   
   bool VarNotifier::hasChangedNoReset() {
-    bool result;
-    mutex.lock();
-    result=changed;
-    mutex.unlock();
-    return result;
+    QMutexLocker locker(&mutex);
+    return changed;
   }
   
   void VarNotifier::changeSlotOtherChange() {
-    mutex.lock();
-    changed=true;
-    mutex.unlock();
+    {
+      QMutexLocker locker(&mutex);
+      changed=true;
+    }
     Q_EMIT changeOccurred(VarPtr());
   }
   
   void VarNotifier::changeSlot(VarPtr item) {
-    mutex.lock();
-    changed=true;
-    mutex.unlock();
+    {
+      QMutexLocker locker(&mutex);
+      changed=true;
+    }
     Q_EMIT changeOccurred(item);
   }
   
   void VarNotifier::setChanged(bool value) {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     changed=value;
-    mutex.unlock();
   }
   
   
   void VarNotifier::internalNonMutexedRemoveItem(VarType * item) {
-    if (item==0) return;
+    if (item==nullptr) return;
     QHash<VarType *, VarNotificationType>::iterator iter;
     iter = senders.find(item);
     if (iter != senders.constEnd()) {
-      disconnect(item, 0, this, SLOT(changeSlot(VarPtr)));
+      disconnect(item, nullptr, this, SLOT(changeSlot(VarPtr)));
       senders.erase(iter);
     }
   }
   
   void VarNotifier::internalNonMutexedAddItem(VarType * item, VarNotificationType notification_type) {
-    if (item==0) return;
+    if (item==nullptr) return;
     QHash<VarType *, VarNotificationType>::iterator iter;
     iter = senders.find(item);
     if (iter != senders.constEnd()) {
@@ -103,7 +97,7 @@ namespace VarTypes {
       } else {
         //item exists, but with wrong notification type:
         //fix it:
-        disconnect(item, 0, this, SLOT(changeSlot(VarPtr)));
+        disconnect(item, nullptr, this, SLOT(changeSlot(VarPtr)));
         iter.value() = notification_type;
       }
     } else {
@@ -118,46 +112,42 @@ namespace VarTypes {
   }
   
   void VarNotifier::addItem(VarPtr item, VarNotificationType notification_type) {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     internalNonMutexedAddItem(item.get(), notification_type);
-    mutex.unlock();
   }
   
   void VarNotifier::addRecursive(VarPtr item, VarNotificationType notification_type, bool include_root) {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     QQueue<VarType *> queue;
-    if (item.get()!=0) queue.enqueue(item.get());
+    if (item.get()!=nullptr) queue.enqueue(item.get());
     while(queue.isEmpty()==false) {
       VarType * d = queue.dequeue();
       if ((d!=item.get()) || include_root) internalNonMutexedAddItem(d,notification_type);
       vector<VarPtr> children = d->getChildren();
       int s=children.size();
       for (int i=0;i<s;i++) {
-        if (children[i].get()!=0) queue.enqueue(children[i].get());
+        if (children[i].get()!=nullptr) queue.enqueue(children[i].get());
       }
     }
-    mutex.unlock();
   }
   
   void VarNotifier::removeItem(VarPtr item) {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     internalNonMutexedRemoveItem(item.get());
-    mutex.unlock();
   }
   
   void VarNotifier::removeRecursive(VarPtr item, bool include_root) {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     QQueue<VarType *> queue;
-    if (item.get()!=0) queue.enqueue(item.get());
+    if (item.get()!=nullptr) queue.enqueue(item.get());
     while(queue.isEmpty()==false) {
       VarType * d = queue.dequeue();
       if ((d!=item.get()) || include_root) internalNonMutexedRemoveItem(item.get());
       vector<VarPtr> children = d->getChildren();
       int s=children.size();
       for (int i=0;i<s;i++) {
-        if (children[i].get()!=0) queue.enqueue(children[i].get());
+        if (children[i].get()!=nullptr) queue.enqueue(children[i].get());
       }
     }
-    mutex.unlock();
   }
 };

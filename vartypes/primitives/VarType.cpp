@@ -33,7 +33,7 @@ namespace VarTypes {
   {
     qRegisterMetaType<VarPtr>("VarPtr");
     #ifndef VDATA_NO_THREAD_SAFETY
-    _mutex=new QMutex();
+    _mutex = std::make_unique<QMutex>();
     #endif
     lock();
     _name=name;
@@ -43,9 +43,6 @@ namespace VarTypes {
   
   VarType::~VarType()
   {
-    #ifndef VDATA_NO_THREAD_SAFETY
-    delete _mutex;
-    #endif
   }
   
   VarTypeFlag VarType::getFlags() const {
@@ -115,13 +112,13 @@ namespace VarTypes {
 
   string VarType::getInstanceDescription()
   {
-    QMutexLocker lock(_mutex);
+    QMutexLocker lock(_mutex.get());
     return _instance_description;
   }
 
   void VarType::setInstanceDescription(string description)
   {
-    QMutexLocker lock(_mutex);
+    QMutexLocker lock(_mutex.get());
     _instance_description=description;
   }
   
@@ -153,7 +150,7 @@ namespace VarTypes {
   {
     char result[255];
     result[0]=0;
-    sprintf(result,"%d",val);
+    snprintf(result, sizeof(result), "%d", val);
     return result;
   }
   
@@ -161,7 +158,7 @@ namespace VarTypes {
   {
     char result[255];
     result[0]=0;
-    sprintf(result,"%lf",val);
+    snprintf(result, sizeof(result), "%lf", val);
     return result;
   }
   
