@@ -3,8 +3,8 @@
 ## Prerequisites
 
 - **CMake** 3.16 or later
-- **Qt** 5.15+ or Qt 6.5+ (Core, Gui, Widgets, Xml modules)
-- **C++17** compatible compiler
+- **Qt** 5.15+ or Qt 6.5+ (Core, Gui, Widgets modules)
+- **C++14** compatible compiler
 
 ## Building
 
@@ -83,12 +83,12 @@ The build system auto-detects Qt6 first, then falls back to Qt5. Both are fully 
 ## Porting from Old Build System
 
 ### Changes from legacy CMake
-1. **C++ standard**: Upgraded from C++11 to C++17
+1. **C++ standard**: Upgraded from C++11 to C++14
 2. **Global flags removed**: No more `CMAKE_CXX_FLAGS_RELEASE` or `CMAKE_CXX_FLAGS_DEBUG` globals
 3. **Target-based properties**: All include dirs, compile features, and link libraries are per-target
 4. **Module split**: Single `vartypes` library is now `vartypes-core` + `vartypes-widgets`
 5. **Example gated**: Example is now behind `BUILD_EXAMPLES=OFF` by default
-6. **Qt Xml module**: Now required for JSON serialization support
+6. **JSON serialization**: Uses `QJsonDocument` from Qt Core (no additional Qt modules needed)
 
 ### Migration Steps
 1. Replace `target_link_libraries(... vartypes)` with `target_link_libraries(... vartypes-core)` for non-GUI code

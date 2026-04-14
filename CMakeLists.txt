@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(vartypes VERSION 0.8.0 LANGUAGES CXX)
+project(vartypes VERSION 0.8.0 LANGUAGES CXX C)
 
 # ─── Build options ───
 option(BUILD_GUI       "Build the vartypes-widgets GUI library"     ON)
@@ -7,9 +7,11 @@ option(BUILD_EXAMPLES  "Build example applications"                 OFF)
 option(BUILD_TESTS     "Build unit tests"                           OFF)
 
 # ─── Global settings ───
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -26,7 +28,13 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
 message(STATUS "Using Qt ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}")
 
 # ═══════════════════════════════════════════════════════════════════════
-# vartypes-core: Non-GUI library (types, serialization, factory)
+# vartypes-core: Types, serialization, factory, primitives
+#
+# NOTE: VarType base class has virtual GUI methods (createEditor, paint,
+# etc.) and includes Qt Widgets headers. A full GUI decoupling would
+# require an interface refactor. For now, vartypes-core still depends
+# on Qt::Gui and Qt::Widgets. The separate vartypes-widgets library
+# contains the tree view, model, and delegate code.
 # ═══════════════════════════════════════════════════════════════════════
 set(CORE_SRCS
   vartypes/VarBase64.cpp
@@ -106,15 +114,16 @@ set_target_properties(vartypes-core PROPERTIES
   OUTPUT_NAME vartypes-core
 )
 
-target_compile_features(vartypes-core PUBLIC cxx_std_17)
+target_compile_features(vartypes-core PUBLIC cxx_std_14)
 
 target_include_directories(vartypes-core
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/primitives>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/gui>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/xml>
     $<INSTALL_INTERFACE:include/vartypes>
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/gui>
 )
 
 target_link_libraries(vartypes-core
@@ -159,7 +168,7 @@ if(BUILD_GUI)
     OUTPUT_NAME vartypes-widgets
   )
 
-  target_compile_features(vartypes-widgets PUBLIC cxx_std_17)
+  target_compile_features(vartypes-widgets PUBLIC cxx_std_14)
 
   target_link_libraries(vartypes-widgets
     PUBLIC
@@ -211,6 +220,7 @@ endif()
 # Install
 # ═══════════════════════════════════════════════════════════════════════
 include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 install(FILES ${CORE_HEADERS}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vartypes
@@ -230,13 +240,38 @@ install(TARGETS vartypes-core
 )
 
 if(BUILD_GUI)
-  install(TARGETS vartypes-widgets
+  install(TARGETS vartypes-widgets vartypes
     EXPORT vartypes-targets
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
 endif()
+
+# ─── CMake package config for find_package(vartypes) ───
+install(EXPORT vartypes-targets
+  FILE vartypes-targets.cmake
+  NAMESPACE vartypes::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vartypes
+)
+
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/vartypesConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/vartypesConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vartypes
+)
+
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/vartypesConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/vartypesConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/vartypesConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/vartypes
+)
 
 install(FILES README.md COPYING
   DESTINATION ${CMAKE_INSTALL_DOCDIR}

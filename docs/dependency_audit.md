@@ -6,7 +6,7 @@
 - **Qt Core**: Used throughout for QObject, signals/slots, QString, QFile, etc.
 - **Qt Gui**: QPainter, QStyleOptionViewItem (used in VarType base class for paint/editor methods)
 - **Qt Widgets**: QLineEdit, QSpinBox, QCheckBox, QComboBox, QPushButton (used in VarType editor creation, GUI tree view)
-- **Qt Xml**: Used by VarJSON for QJsonDocument (JSON serialization backend)
+- **Qt Core** also provides: QJsonDocument, QJsonObject, QJsonArray (used by VarJSON for JSON serialization)
 
 **Note**: Qt Gui and Qt Widgets are still used in the core library because `VarType` base class has virtual GUI methods (`createEditor`, `setEditorData`, `setModelData`, `paint`). A complete decoupling would require an interface-based split, which is documented as future work.
 
@@ -42,8 +42,8 @@
 
 | Change | Rationale |
 |---|---|
-| Added `Qt::Xml` module | Required for QJsonDocument (JSON serialization) |
-| C++17 required | `std::make_unique`, structured bindings potential, better STL |
+| JSON via Qt Core | `QJsonDocument` is in Qt Core since Qt 5.0; no extra module needed |
+| C++14 required | `std::make_unique`, better STL, modern patterns |
 | Boost not required | Was never truly required; only behind opt-in `#ifdef` |
 | Protobuf not required | Was never truly required; includes are commented out |
 

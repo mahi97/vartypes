@@ -41,7 +41,7 @@ world = VarJSON::read(world, "config.json");
 ## Building
 
 ```bash
-# Prerequisites: CMake 3.16+, Qt 5.15+ or Qt 6.5+, C++17 compiler
+# Prerequisites: CMake 3.16+, Qt 5.15+ or Qt 6.5+, C++14 compiler
 
 # Basic build
 cmake -B build -DCMAKE_BUILD_TYPE=Release

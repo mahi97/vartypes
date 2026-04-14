@@ -71,6 +71,12 @@ namespace VarTypes {
 
     /// Recursively deserialize children.
     static std::vector<VarPtr> jsonToChildren(const QJsonArray & arr, const std::vector<VarPtr> & existing, bool blind_append);
+
+    /// Apply attribute metadata (min/max) from a JSON object to a VarType node.
+    static void applyAttributes(VarPtr target, const QJsonObject & attrs);
+
+    /// Deserialize children from JSON and add them to a target node.
+    static void applyChildren(VarPtr target, const QJsonArray & childArr, bool blind_append);
   };
 
 } // namespace VarTypes

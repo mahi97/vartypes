@@ -105,6 +105,7 @@ std::string json = VarJSON::getJSON(world);
 ### JSON Backend
 - External blob storage (`VARTYPE_FLAG_SERIALIZE_EXTERNALLY`) is not yet supported in the JSON backend
 - External XML node references (`VARTYPE_FLAG_EXTERNAL_XML`) are not supported in JSON
+- Min/max attributes are written to JSON for documentation purposes but are not restored on read (the generic `VarPtr` interface does not expose `setMin`/`setMax`; constraints are set at tree construction time by the application)
 - These features require additional implementation documented in future_work.md
 
 ### XML Backend

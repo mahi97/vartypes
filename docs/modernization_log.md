@@ -30,17 +30,17 @@
 
 ### What changed
 - Rewrote `CMakeLists.txt` with modern CMake patterns
-- Upgraded from C++11 to C++17
+- Upgraded from C++11 to C++14
 - Removed global compiler flags (`CMAKE_CXX_FLAGS_RELEASE/DEBUG`)
 - Added target-based compile features and include directories
 - Added `BUILD_GUI`, `BUILD_EXAMPLES`, `BUILD_TESTS` options
 - Example no longer builds by default
-- Added `Qt::Xml` dependency for JSON support
+- JSON serialization uses `QJsonDocument` from Qt Core (no extra modules)
 - Added `GNUInstallDirs` for proper install paths
 
 ### Why
 - Global flags are a CMake anti-pattern that makes multi-target builds unpredictable
-- C++17 enables `std::make_unique`, better STL, and future improvements
+- C++14 enables `std::make_unique`, better STL, and modern patterns
 - Build options allow headless/core-only builds
 
 ---
@@ -124,3 +124,54 @@ All 4 tests pass on Qt 5.15.
 - Created `docs/data_migration_notes.md`
 - Created `docs/future_work.md`
 - Updated `docs/modernization_log.md`
+
+---
+
+## Phase 8: Critical Review and Merge Preparation
+**Date**: 2026-04-15
+
+### Review findings
+- Created `docs/pr5_review.md` with detailed analysis of all PR #5 changes
+- Identified 7 critical issues, 3 risky areas, 4 incomplete items
+
+### What was fixed
+
+**CMake / Module split (C2, C4, C5, R1)**:
+- Changed C++ standard from C++17 to C++14 (C++17 was unnecessary; `std::make_unique` is C++14)
+- Restored `LANGUAGES CXX C` (xmlParser is C code)
+- Restored `CMAKE_C_STANDARD 11`
+- Made `vartypes/gui` include path PRIVATE on `vartypes-core` (was PUBLIC, leaking)
+- Added honest documentation in CMakeLists.txt about the core/GUI coupling limitation
+- Added CMake package config generation (`vartypesConfig.cmake`, version file, export targets)
+- Added `vartypes` INTERFACE target to the install export set
+- Created `cmake/vartypesConfig.cmake.in` template
+
+**JSON serialization (C3)**:
+- Fixed `jsonToVar()`: children are now actually added to VarList nodes via `applyChildren()`
+- Fixed `jsonToChildren()`: recursive children for new nodes are now properly added
+- Added `applyChildren()` helper that uses `dynamic_cast<VarList*>` to add new children
+- Added `applyAttributes()` with honest documentation about the VarPtr limitation
+- Added two new test cases: `nestedHierarchyRoundTrip` and `readCreatesNewNodes`
+
+**Documentation (C6)**:
+- Removed false Qt Xml dependency claims from `build_and_porting.md`, `dependency_audit.md`, `modernization_log.md`
+- Fixed C++ standard references from C++17 to C++14 across all docs
+- Created `docs/downstream_integration.md` (find_package, add_subdirectory, FetchContent, ExternalProject)
+- Created `docs/grsim_migration.md` (old style, new style, migration checklist, minimal example)
+- Created `docs/pr5_review.md`
+
+### What was kept as-is
+- RAII mutex changes (unique_ptr<QMutex>, QMutexLocker) - verified correct
+- snprintf, nullptr changes - verified correct
+- VarBase64 unique_ptr cleanup - verified correct
+- JSON serialization write path - was already correct
+- All existing tests - unchanged and still valid
+
+### Remaining non-blocking debt
+- `vartypes-core` still links Qt::Gui and Qt::Widgets (requires interface refactor)
+- `using namespace std;` in VarType.h and VarVal.h headers (pre-existing)
+- VarTypesInstance/VarBase64 singletons not thread-safe (pre-existing)
+- JSON backend does not support external blobs or external XML nodes
+- JSON attribute deserialization is informational only (no setMin/setMax via VarPtr)
+- CI does not test BUILD_GUI=OFF or the new JSON tests specifically
+- Old plain-text `README` file still exists alongside `README.md`

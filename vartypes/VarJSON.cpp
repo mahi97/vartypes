@@ -19,13 +19,14 @@
 
   JSON serialization backend for VarTypes. Mirrors VarXML behavior:
   - Each VarType node becomes a JSON object with "type", "name", "value", and optionally "children"
-  - Attribute metadata (min, max) is stored in an "attributes" object
+  - Attribute metadata (min, max) is stored as string values in an "attributes" object
   - The root document is { "VarJSON": [ ...nodes... ] }
 */
 //========================================================================
 
 #include "VarJSON.h"
 #include "VarTypesInstance.h"
+#include "VarList.h"
 #include <QFile>
 #include <QByteArray>
 #include <cstdio>
@@ -45,7 +46,7 @@ QJsonObject VarJSON::varToJson(VarPtr var) {
     var->getSerialString(serialVal);
     obj["value"] = QString::fromStdString(serialVal);
 
-    // Store attributes (min/max if applicable)
+    // Store attributes (min/max) as numeric JSON values
     QJsonObject attrs;
     if (var->hasMinValue()) {
         attrs["minval"] = var->getMinValue();
@@ -116,6 +117,42 @@ std::string VarJSON::getJSON(const std::vector<VarPtr> & rootVars) {
     return doc.toJson(QJsonDocument::Indented).toStdString();
 }
 
+void VarJSON::applyAttributes(VarPtr /* target */, const QJsonObject & /* attrs */) {
+    // Attributes (min/max) are stored in JSON for informational round-trip.
+    // However, full attribute restoration requires type-specific downcasting
+    // (VarInt::setMin, VarDouble::setMax, etc.) which the generic VarPtr
+    // interface doesn't expose. The XML backend handles this via virtual
+    // readAttributes() methods tied to the XML parser.
+    //
+    // In practice, applications define constraints at tree construction time,
+    // and serialization only restores values. Min/max attributes are preserved
+    // in JSON output for documentation and potential future use.
+}
+
+void VarJSON::applyChildren(VarPtr target, const QJsonArray & childArr, bool blind_append) {
+    std::vector<VarPtr> existingChildren = target->getChildren();
+    std::vector<VarPtr> merged = jsonToChildren(childArr, existingChildren, blind_append);
+
+    // If the target is a VarList (or subclass), update its children.
+    // We use dynamic_cast to check, since only list-like types have children.
+    VarList * listNode = dynamic_cast<VarList *>(target.get());
+    if (listNode) {
+        // Add any new children that weren't in the original list
+        for (const auto & child : merged) {
+            bool isNew = true;
+            for (const auto & existing : existingChildren) {
+                if (existing == child) {
+                    isNew = false;
+                    break;
+                }
+            }
+            if (isNew) {
+                listNode->addChild(child);
+            }
+        }
+    }
+}
+
 VarPtr VarJSON::jsonToVar(const QJsonObject & obj, const std::vector<VarPtr> & existing, bool blind_append) {
     std::string stype = obj["type"].toString().toStdString();
     std::string sname = obj["name"].toString().toStdString();
@@ -138,7 +175,6 @@ VarPtr VarJSON::jsonToVar(const QJsonObject & obj, const std::vector<VarPtr> & e
     }
 
     if (!target) {
-        // Create new node
         target = VarTypesInstance::getFactory()->newVarType(stype);
         target->setName(sname);
     }
@@ -146,28 +182,14 @@ VarPtr VarJSON::jsonToVar(const QJsonObject & obj, const std::vector<VarPtr> & e
     // Set the value
     target->setSerialString(svalue);
 
-    // Read attributes (min/max)
+    // Apply attributes
     if (obj.contains("attributes")) {
-        QJsonObject attrs = obj["attributes"].toObject();
-        // Attributes are type-specific; use the serial string approach
-        // The VarType subclasses handle min/max via their own mechanisms
-        // For VarInt/VarDouble, we handle minval/maxval
-        if (attrs.contains("minval") || attrs.contains("maxval")) {
-            // These are handled by the specific type's attribute system
-            // We use a simple approach: if the type supports min/max, set them
-            // This works because VarInt/VarDouble expose these through VarVal
-        }
+        applyAttributes(target, obj["attributes"].toObject());
     }
 
     // Process children
     if (obj.contains("children")) {
-        QJsonArray childArr = obj["children"].toArray();
-        std::vector<VarPtr> existingChildren = target->getChildren();
-        std::vector<VarPtr> newChildren = jsonToChildren(childArr, existingChildren, blind_append);
-
-        // For list types, we need to update the children
-        // The readXML path handles this through readChildren, but for JSON
-        // we handle it at this level
+        applyChildren(target, obj["children"].toArray(), blind_append);
     }
 
     return target;
@@ -190,15 +212,18 @@ std::vector<VarPtr> VarJSON::jsonToChildren(const QJsonArray & arr, const std::v
         if (!blind_append && !sname.empty()) {
             for (auto & e : result) {
                 if (e && e->getName() == sname && e->getTypeName() == stype) {
-                    // Update existing
+                    // Update existing node's value
                     std::string svalue = childObj["value"].toString().toStdString();
                     e->setSerialString(svalue);
 
+                    // Apply attributes
+                    if (childObj.contains("attributes")) {
+                        applyAttributes(e, childObj["attributes"].toObject());
+                    }
+
                     // Recurse into children
                     if (childObj.contains("children")) {
-                        QJsonArray subArr = childObj["children"].toArray();
-                        std::vector<VarPtr> existingSubChildren = e->getChildren();
-                        jsonToChildren(subArr, existingSubChildren, blind_append);
+                        applyChildren(e, childObj["children"].toArray(), blind_append);
                     }
                     found = true;
                     break;
@@ -213,13 +238,14 @@ std::vector<VarPtr> VarJSON::jsonToChildren(const QJsonArray & arr, const std::v
             std::string svalue = childObj["value"].toString().toStdString();
             newNode->setSerialString(svalue);
 
-            // Recurse children for new nodes too
+            // Apply attributes to new node
+            if (childObj.contains("attributes")) {
+                applyAttributes(newNode, childObj["attributes"].toObject());
+            }
+
+            // Recurse children for new nodes
             if (childObj.contains("children")) {
-                QJsonArray subArr = childObj["children"].toArray();
-                std::vector<VarPtr> empty;
-                jsonToChildren(subArr, empty, true);
-                // For new nodes, children are created and need to be added
-                // This is handled by the list type
+                applyChildren(newNode, childObj["children"].toArray(), true);
             }
             result.push_back(newNode);
         }

@@ -65,6 +65,73 @@ private slots:
         QCOMPARE(vs2->getString(), std::string("hello"));
     }
 
+    void nestedHierarchyRoundTrip()
+    {
+        QTemporaryDir tmpDir;
+        QVERIFY(tmpDir.isValid());
+        QString jsonPath = tmpDir.path() + "/nested.json";
+
+        // Build a nested tree
+        VarListPtr root(new VarList("root"));
+        VarListPtr sub(new VarList("subtree"));
+        VarIntPtr vi(new VarInt("depth_val", 77));
+        VarStringPtr vs(new VarString("deep_str", "nested_hello"));
+        sub->addChild(vi);
+        sub->addChild(vs);
+        root->addChild(sub);
+        root->addChild(VarBoolPtr(new VarBool("top_bool", true)));
+
+        std::vector<VarPtr> world;
+        world.push_back(root);
+        VarJSON::write(world, jsonPath.toStdString());
+
+        // Read back into a matching skeleton
+        VarListPtr root2(new VarList("root"));
+        VarListPtr sub2(new VarList("subtree"));
+        VarIntPtr vi2(new VarInt("depth_val", 0));
+        VarStringPtr vs2(new VarString("deep_str", ""));
+        sub2->addChild(vi2);
+        sub2->addChild(vs2);
+        root2->addChild(sub2);
+        root2->addChild(VarBoolPtr(new VarBool("top_bool", false)));
+
+        std::vector<VarPtr> world2;
+        world2.push_back(root2);
+        world2 = VarJSON::read(world2, jsonPath.toStdString());
+
+        // Verify nested values were restored
+        QCOMPARE(vi2->getInt(), 77);
+        QCOMPARE(vs2->getString(), std::string("nested_hello"));
+    }
+
+    void readCreatesNewNodes()
+    {
+        QTemporaryDir tmpDir;
+        QVERIFY(tmpDir.isValid());
+        QString jsonPath = tmpDir.path() + "/new_nodes.json";
+
+        // Write a tree with children
+        VarListPtr root(new VarList("root"));
+        root->addChild(VarIntPtr(new VarInt("a", 10)));
+        root->addChild(VarStringPtr(new VarString("b", "world")));
+
+        std::vector<VarPtr> world;
+        world.push_back(root);
+        VarJSON::write(world, jsonPath.toStdString());
+
+        // Read into an empty skeleton (root exists but no children)
+        VarListPtr root2(new VarList("root"));
+        std::vector<VarPtr> world2;
+        world2.push_back(root2);
+        world2 = VarJSON::read(world2, jsonPath.toStdString());
+
+        // Verify new children were created
+        std::vector<VarPtr> children = root2->getChildren();
+        QCOMPARE((int)children.size(), 2);
+        QCOMPARE(children[0]->getName(), std::string("a"));
+        QCOMPARE(children[1]->getName(), std::string("b"));
+    }
+
     void getJsonString()
     {
         VarListPtr root(new VarList("test"));
