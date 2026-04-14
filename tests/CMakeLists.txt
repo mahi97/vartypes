@@ -26,6 +26,6 @@ set_tests_properties(test_xml PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
 
 # --- JSON round-trip test ---
 add_executable(test_json test_json.cpp)
-target_link_libraries(test_json PRIVATE ${TEST_LIBS} Qt${QT_VERSION_MAJOR}::Xml)
+target_link_libraries(test_json PRIVATE ${TEST_LIBS})
 add_test(NAME test_json COMMAND test_json)
 set_tests_properties(test_json PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
