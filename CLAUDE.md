@@ -41,6 +41,7 @@ Tests require `QT_QPA_PLATFORM=offscreen` since they use Qt GUI types without a 
 | `BUILD_GUI` | ON | Build `vartypes-widgets` GUI library |
 | `BUILD_EXAMPLES` | OFF | Build example applications (requires `BUILD_GUI=ON`) |
 | `BUILD_TESTS` | OFF | Build unit tests |
+| `BUILD_STATIC` | OFF | Build static libraries instead of shared |
 
 ## Qt Compatibility
 

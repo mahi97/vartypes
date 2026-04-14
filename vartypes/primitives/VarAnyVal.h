@@ -87,7 +87,7 @@ namespace VarTypes {
     }
 
     virtual VarVal * clone() const {
-      if (_shared_ptr.get()!=0) {
+      if (_shared_ptr.get() != nullptr) {
         return new VarAnyVal<CLASS_VARVAL_TYPE>(_shared_ptr);
       } else {
         return new VarAnyVal<CLASS_VARVAL_TYPE>(_ptr, false);

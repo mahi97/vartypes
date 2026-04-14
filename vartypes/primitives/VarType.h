@@ -345,7 +345,7 @@ namespace VarTypes {
       ////fprintf(stderr, "NODE: %s claims to have %d children\n", getName().c_str(), list.size());
       for (int i = 0; i < list.size(); i++) {
         std::shared_ptr<t> ptr = std::dynamic_pointer_cast<t>(list[i]); 
-        if (ptr.get()!=0) {
+        if (ptr.get() != nullptr) {
           result.push_back(ptr);
         }
       }
@@ -360,7 +360,7 @@ namespace VarTypes {
 // //       vector<VarPtr> list = getChildren();
 // //       for (int i = 0; i < list.size(); i++) {
 // //         std::shared_ptr<t> ptr = std::dynamic_pointer_cast<t>(list[i]); 
-// //         if (ptr.get()!=0) {
+// //         if (ptr.get() != nullptr) {
 // //           result.push_back(ptr);
 // //         }
 // //       }

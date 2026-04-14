@@ -29,7 +29,7 @@ namespace VarTypes {
     tw->setAnimated(false);
     tw->setWordWrap(true);
     tw->setEditTriggers(tw->editTriggers() | QAbstractItemView::CurrentChanged);
-    if (tmodel!=0) setModel(tmodel);
+    if (tmodel != nullptr) setModel(tmodel);
     search_edit = new QLineEdit(this);
     l = new QVBoxLayout();
     setLayout(l);
@@ -45,7 +45,7 @@ namespace VarTypes {
   }
   
   void VarTreeView::search(const QString & text) {
-    if (model==0) return;
+    if (model == nullptr) return;
     search_result=model->findItems(text,false);
     result_idx=0;
     if (search_result.size() > 0) {
@@ -70,7 +70,7 @@ namespace VarTypes {
   }
   
   void VarTreeView::setModel(VarTreeModel * tmodel) {
-    if (model!=0) {
+    if (model != nullptr) {
       //remove any old signals from the model to this view
       disconnect(model,0,this,0);
     }
@@ -85,7 +85,7 @@ namespace VarTypes {
   
     //open persistent editors for any items which to not have one yet:
   
-    if (model!=0) {
+    if (model != nullptr) {
       //connect the model to open persistent editors for new items:
       //connect(model,SIGNAL(rowsInserted(const QModelIndex &, int, int)),this,SLOT(newItemChecksRows(const QModelIndex &, int, int)));
       connect(model,SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),this,SLOT(checkDataChanged(const QModelIndex &, const QModelIndex &)));
@@ -98,11 +98,11 @@ namespace VarTypes {
     for (int i=topLeft.row();i<=bottomRight.row();i++) {
       if (topLeft.column()==1) {
         QModelIndex index=topLeft.sibling(i,1);
-        if (index.isValid() && index.model()!=0) {
+        if (index.isValid() && index.model() != nullptr) {
           VarItem * item=(VarItem*)(((VarTreeModel*)index.model())->itemFromIndex (index));
-          if (item!=0) {
+          if (item != nullptr) {
             VarPtr dt=item->getVarType();
-            if (dt.get()!=0) {
+            if (dt.get() != nullptr) {
               if ((dt->getFlags() & VARTYPE_FLAG_PERSISTENT) != 0x00) {
                 tw->openPersistentEditor(index);
               } /*else {
@@ -146,7 +146,7 @@ namespace VarTypes {
   }
   
   void VarTreeView::expandAndFocus(VarPtr search) {
-    if (model==0) return;
+    if (model == nullptr) return;
     QList<VarItem *> res=model->findItems(search);
     if (res.size() > 0) {
       tw->expand(res[0]->index());

@@ -139,7 +139,7 @@ namespace VarTypes {
   
   string VarType::fixString(const char * cst)
   {
-    if (cst==0) {
+    if (cst == nullptr) {
       return "";
     } else {
       return cst;
@@ -451,7 +451,7 @@ namespace VarTypes {
     //---fix for recursing tree that's not defined in xml yet:
     queue<VarPtr> _queue;
     for (set<VarPtr>::iterator iter = unmatched_children.begin(); iter!=unmatched_children.end(); iter++) {
-      if (*iter!=0) _queue.push(*iter);
+      if (*iter != nullptr) _queue.push(*iter);
     }
     //recurse all unmatched children to make sure we load all externals:
     while(_queue.empty()==false) {
@@ -461,7 +461,7 @@ namespace VarTypes {
       vector<VarPtr> children = d->getChildren();
       int s=children.size();
       for (int i=0;i<s;i++) {
-        if (children[i]!=0) _queue.push(children[i]);
+        if (children[i] != nullptr) _queue.push(children[i]);
       }
     }
     //---end of fix

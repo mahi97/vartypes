@@ -72,7 +72,7 @@ namespace VarTypes {
     void copyChildrenFromVarList(VarListPtr other) {
       lock();
         list.clear();
-        if (other.get()!=0) {
+        if (other.get() != nullptr) {
           list = other->getChildren();
         }
       unlock();
@@ -186,7 +186,7 @@ namespace VarTypes {
     /// However, if the child *is* found then other will be *deleted* and the child will be returned!
     VarPtr findChildOrReplace(VarPtr other) {
       VarPtr data = findChild(other->getName());
-      if (data.get()!=0) {
+      if (data.get() != nullptr) {
         return data;
       } else {
         addChild(other);
@@ -200,7 +200,7 @@ namespace VarTypes {
     template <class VCLASSPTR> 
     std::shared_ptr<VCLASSPTR> findChildOrReplace(std::shared_ptr<VCLASSPTR> other) {
       std::shared_ptr<VCLASSPTR> data = std::dynamic_pointer_cast<VCLASSPTR>(findChild(other->getName()));
-      if (data.get()!=0) {
+      if (data.get() != nullptr) {
         return data;
       } else {
         addChild(other);
@@ -233,7 +233,7 @@ namespace VarTypes {
     (void)delegate;
     (void)option;
     (void)parent;
-    return 0;
+    return nullptr;
   }
 
   };

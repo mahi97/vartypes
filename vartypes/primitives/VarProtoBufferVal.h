@@ -70,7 +70,7 @@ namespace VarTypes {
     virtual void getSerialString(string & val) const {
       lock();
       string temp;
-      if (_val.get()!=0) {
+      if (_val.get() != nullptr) {
         _val->SerializeToString(&temp);
       }
       VarBase64::getTool()->encode(temp, val,1);
@@ -80,7 +80,7 @@ namespace VarTypes {
     virtual void setSerialString(const string & val) {
       lock();
       string temp;
-      if (_val.get()!=0) {
+      if (_val.get() != nullptr) {
         VarBase64::getTool()->decode(val,temp);
         _val->ParseFromString(temp);
       }
@@ -90,13 +90,13 @@ namespace VarTypes {
 
     virtual void getBinarySerialString(string & val) const {
       lock();
-      if (_val.get()!=0) _val->SerializeToString(&val);
+      if (_val.get() != nullptr) _val->SerializeToString(&val);
       unlock();
     }
   
     virtual void setBinarySerialString(const string & val) {
       lock();
-      if (_val.get()!=0) _val->ParseFromString(val);
+      if (_val.get() != nullptr) _val->ParseFromString(val);
       unlock();
       changed();
     }

@@ -5,6 +5,7 @@ project(vartypes VERSION 0.8.0 LANGUAGES CXX C)
 option(BUILD_GUI       "Build the vartypes-widgets GUI library"     ON)
 option(BUILD_EXAMPLES  "Build example applications"                 OFF)
 option(BUILD_TESTS     "Build unit tests"                           OFF)
+option(BUILD_STATIC    "Build static libraries instead of shared"   OFF)
 
 # ─── Global settings ───
 set(CMAKE_CXX_STANDARD 14)
@@ -107,7 +108,13 @@ set(CORE_HEADERS
   vartypes/primitives/VarAny.h
 )
 
-add_library(vartypes-core SHARED ${CORE_SRCS} ${CORE_HEADERS})
+if(BUILD_STATIC)
+  set(VARTYPES_LIB_TYPE STATIC)
+else()
+  set(VARTYPES_LIB_TYPE SHARED)
+endif()
+
+add_library(vartypes-core ${VARTYPES_LIB_TYPE} ${CORE_SRCS} ${CORE_HEADERS})
 set_target_properties(vartypes-core PROPERTIES
   VERSION   ${PROJECT_VERSION}
   SOVERSION 1
@@ -133,7 +140,7 @@ target_link_libraries(vartypes-core
     Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-if(WIN32)
+if(WIN32 AND NOT BUILD_STATIC)
   set_target_properties(vartypes-core PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
@@ -161,7 +168,7 @@ if(BUILD_GUI)
     vartypes/gui/icons/icons.qrc
   )
 
-  add_library(vartypes-widgets SHARED ${WIDGET_SRCS} ${WIDGET_HEADERS} ${WIDGET_RC})
+  add_library(vartypes-widgets ${VARTYPES_LIB_TYPE} ${WIDGET_SRCS} ${WIDGET_HEADERS} ${WIDGET_RC})
   set_target_properties(vartypes-widgets PROPERTIES
     VERSION   ${PROJECT_VERSION}
     SOVERSION 1
@@ -176,7 +183,7 @@ if(BUILD_GUI)
       Qt${QT_VERSION_MAJOR}::Widgets
   )
 
-  if(WIN32)
+  if(WIN32 AND NOT BUILD_STATIC)
     set_target_properties(vartypes-widgets PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
   endif()
 endif()
