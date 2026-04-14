@@ -70,7 +70,17 @@ jobs:
       - name: Build
         run: cmake --build build --config Release --parallel
 
-      - name: Test
+      - name: Test (Unix)
+        if: runner.os != 'Windows'
         env:
           QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure -C Release
+
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        env:
+          QT_QPA_PLATFORM: offscreen
+        shell: pwsh
+        run: |
+          $env:PATH = "${{ env.QT_ROOT_DIR }}/bin;${{ github.workspace }}/build/bin/Release;${{ github.workspace }}/build/bin;$env:PATH"
+          ctest --test-dir build --output-on-failure -C Release
