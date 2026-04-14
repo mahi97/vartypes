@@ -62,6 +62,7 @@ QT_QPA_PLATFORM=offscreen ctest --test-dir build --output-on-failure
 | `BUILD_GUI` | ON | Build the `vartypes-widgets` GUI library |
 | `BUILD_EXAMPLES` | OFF | Build example applications |
 | `BUILD_TESTS` | OFF | Build unit tests |
+| `BUILD_STATIC` | OFF | Build static libraries instead of shared |
 
 ## Library Modules
 
@@ -116,8 +117,8 @@ std::string xml = VarXML::getXML(world);
 |---|---|---|
 | Ubuntu 22.04 | ✅ | ✅ |
 | Ubuntu 24.04 | ✅ | ✅ |
-| macOS 14/15 | — | ✅ |
-| Windows | — | ✅ |
+| macOS 14/15 (arm64) | — | ✅ |
+| Windows | ✅ | ✅ |
 
 ## License
 

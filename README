@@ -22,6 +22,15 @@
 
 =======================================================================
  Changelog:
+ 04/15/26 - v0.8.0 - Modernized CMake (target-based, GNUInstallDirs,
+                     package config for find_package(vartypes))
+                   - Split into vartypes-core + vartypes-widgets libraries
+                   - Added JSON serialization via QJsonDocument (Qt Core)
+                   - Added BUILD_STATIC option for static library builds
+                   - Qt5/Qt6 dual support (auto-detected)
+                   - RAII mutexes (unique_ptr<QMutex>), nullptr throughout
+                   - CI: Ubuntu, macOS, Windows with Qt5 and Qt6
+                   - Added unit tests (Qt Test framework)
  12/23/15 - v0.8 - Fixed Issue #2 (VarIntVal constructor was checking
                    _val before it was set)
                  - Made shared_ptr explicitly use std namespace
@@ -87,10 +96,10 @@
 ========================================================================
 
  About:       VarTypes is a feature-rich, object-oriented framework
-              for managing variables in C++ / QT4.
+              for managing variables in C++ / Qt.
 
  Features:    VarTypes allows hierarchical organization, thread-safety,
-              load/store to/from xml, QT4-based signals, QT4-based model/view
+              load/store to/from XML and JSON, Qt signals, Qt model/view
               visualization.
 
               VarTypes aims to make it easy for application developers to
@@ -104,21 +113,19 @@
               More complex types can be added easily by inheriting the
               VarData base-class.
 
- Requires:    cmake, Qt >=4.5, C++ libraries (automatically supplied by
-              many modern compilers).
+ Requires:    CMake 3.16+, Qt 5.15+ or Qt 6, C++14 compiler.
 
  Usage:       The VarTypes library can be built by running:
-              1) make
-              2) sudo make install
-              Note that cmake is required to build it.
-              
-              An example including the QT4 GUI is located in the example/
-              directory. It is built automatically along with the library
-              (but is not installed as part of the install command).
-              
+              1) cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON
+              2) cmake --build build --parallel
+              3) sudo cmake --install build
+
+              An example including the Qt GUI is located in the example/
+              directory. Build with -DBUILD_EXAMPLES=ON.
+
               To run the example:
-              
-              build/vartype_example
+
+              build/bin/vartype_example
 
               All the interesting code on how to construct a vartree and
               GUI is located in example/src/mainwindow.cpp
