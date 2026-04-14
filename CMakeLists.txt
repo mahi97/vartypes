@@ -1,178 +1,245 @@
 cmake_minimum_required(VERSION 3.16)
-project(vartypes VERSION 0.8.0 LANGUAGES CXX C)
+project(vartypes VERSION 0.8.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+# ─── Build options ───
+option(BUILD_GUI       "Build the vartypes-widgets GUI library"     ON)
+option(BUILD_EXAMPLES  "Build example applications"                 OFF)
+option(BUILD_TESTS     "Build unit tests"                           OFF)
+
+# ─── Global settings ───
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-# Try Qt6 first, then fall back to Qt5
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Gui Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets)
-
-message(STATUS "Using Qt ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}")
-
-set(src_dir .)
-
-set (SRCS
-  ${src_dir}/vartypes/VarBase64.cpp
-  ${src_dir}/vartypes/VarNotifier.cpp
-  ${src_dir}/vartypes/VarTypes.cpp
-  ${src_dir}/vartypes/VarXML.cpp
-  ${src_dir}/vartypes/VarTypesInstance.cpp
-  ${src_dir}/vartypes/VarTypesFactory.cpp
-  ${src_dir}/vartypes/xml/xmlParser.cpp
-
-  ${src_dir}/vartypes/primitives/VarStringVal.cpp
-  ${src_dir}/vartypes/primitives/VarBoolVal.cpp
-  ${src_dir}/vartypes/primitives/VarVal.cpp
-  ${src_dir}/vartypes/primitives/VarIntVal.cpp
-  ${src_dir}/vartypes/primitives/VarDoubleVal.cpp
-
-  ${src_dir}/vartypes/primitives/VarType.cpp
-  ${src_dir}/vartypes/primitives/VarBlob.cpp
-  ${src_dir}/vartypes/primitives/VarBool.cpp
-  ${src_dir}/vartypes/primitives/VarDouble.cpp
-  ${src_dir}/vartypes/primitives/VarExternal.cpp
-  ${src_dir}/vartypes/primitives/VarInt.cpp
-  ${src_dir}/vartypes/primitives/VarList.cpp
-  ${src_dir}/vartypes/primitives/VarQWidget.cpp
-  ${src_dir}/vartypes/primitives/VarSelection.cpp
-  ${src_dir}/vartypes/primitives/VarString.cpp
-  ${src_dir}/vartypes/primitives/VarStringEnum.cpp
-  ${src_dir}/vartypes/primitives/VarTrigger.cpp
-
-  ${src_dir}/vartypes/gui/VarItem.cpp
-  ${src_dir}/vartypes/gui/VarItemDelegate.cpp
-  ${src_dir}/vartypes/gui/VarTreeModel.cpp
-  ${src_dir}/vartypes/gui/VarTreeView.cpp
-  ${src_dir}/vartypes/gui/VarTreeViewOptions.cpp
-
-  ${src_dir}/vartypes/primitives/VarProtoBufferVal.cpp
-  ${src_dir}/vartypes/primitives/VarProtoBuffer.cpp
-
-  ${src_dir}/vartypes/primitives/VarAnyVal.cpp
-  ${src_dir}/vartypes/primitives/VarAny.cpp
-)
-
-set (HEADERS
-  ${src_dir}/vartypes/primitives/VarType.h
-  ${src_dir}/vartypes/primitives/VarBlob.h
-  ${src_dir}/vartypes/primitives/VarBool.h
-  ${src_dir}/vartypes/primitives/VarDouble.h
-  ${src_dir}/vartypes/primitives/VarExternal.h
-  ${src_dir}/vartypes/primitives/VarInt.h
-  ${src_dir}/vartypes/primitives/VarList.h
-  ${src_dir}/vartypes/primitives/VarQWidget.h
-  ${src_dir}/vartypes/primitives/VarSelection.h
-  ${src_dir}/vartypes/primitives/VarString.h
-  ${src_dir}/vartypes/primitives/VarStringEnum.h
-  ${src_dir}/vartypes/primitives/VarTrigger.h
-  ${src_dir}/vartypes/gui/VarItem.h
-  ${src_dir}/vartypes/gui/VarItemDelegate.h
-  ${src_dir}/vartypes/gui/VarTreeModel.h
-  ${src_dir}/vartypes/gui/VarTreeView.h
-  ${src_dir}/vartypes/VarNotifier.h
-)
-
-set (INSTALLABLE_HEADERS
-  ${HEADERS}
-  ${src_dir}/vartypes/VarTypesLoaderInterface.h
-  ${src_dir}/vartypes/VarTypes.h
-  ${src_dir}/vartypes/VarTypesFactory.h
-  ${src_dir}/vartypes/gui/VarTreeViewOptions.h
-  ${src_dir}/vartypes/xml/xmlParser.h
-  ${src_dir}/vartypes/primitives/VarVal.h
-  ${src_dir}/vartypes/primitives/VarStringVal.h
-  ${src_dir}/vartypes/primitives/VarIntVal.h
-  ${src_dir}/vartypes/primitives/VarDoubleVal.h
-  ${src_dir}/vartypes/primitives/VarBoolVal.h
-  ${src_dir}/vartypes/VarXML.h
-  ${src_dir}/vartypes/VarTypesInstance.h
-  ${src_dir}/vartypes/VarBase64.h
-  ${src_dir}/vartypes/primitives/VarProtoBufferVal.h
-  ${src_dir}/vartypes/primitives/VarProtoBuffer.h
-  ${src_dir}/vartypes/primitives/VarAnyVal.h
-  ${src_dir}/vartypes/primitives/VarAny.h
-)
-
-set (INSTALLABLE_DOCFILES
-  ${src_dir}/README
-  ${src_dir}/COPYING
-)
-
-set (RC
-  ${src_dir}/vartypes/gui/icons/icons.qrc
-)
-
-#flags to set in debug mode
-set (CMAKE_CXX_FLAGS_DEBUG "-g")
-
-#flags to set in release mode
-if(NOT MSVC)
-  set (CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3")
-else()
-  set (CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /O2")
-endif()
-
-# Place all runtime binaries (executables, DLLs) in a common directory so that
+# Place all runtime binaries in a common directory so that
 # on Windows, executables can find the shared library without PATH changes.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-SET(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Output directory for libraries")
-SET(CMAKE_INSTALL_INCLUDEDIR include CACHE PATH "Output directory for header files")
-SET(CMAKE_INSTALL_DOCDIR share/doc CACHE PATH "Output directory for documentation and license files")
+# ─── Find Qt (Qt6 preferred, Qt5 fallback) ───
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Xml)
+message(STATUS "Using Qt ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}")
 
-set (target vartypes)
-add_library(${target} SHARED ${SRCS} ${HEADERS} ${RC})
-set_target_properties(${target} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
-target_include_directories(${target} PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes
-  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes/primitives
-  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes/gui
-  ${CMAKE_CURRENT_SOURCE_DIR}/vartypes/xml
-)
-target_link_libraries(${target} PUBLIC
-  Qt${QT_VERSION_MAJOR}::Core
-  Qt${QT_VERSION_MAJOR}::Gui
-  Qt${QT_VERSION_MAJOR}::Widgets
+# ═══════════════════════════════════════════════════════════════════════
+# vartypes-core: Non-GUI library (types, serialization, factory)
+# ═══════════════════════════════════════════════════════════════════════
+set(CORE_SRCS
+  vartypes/VarBase64.cpp
+  vartypes/VarNotifier.cpp
+  vartypes/VarTypes.cpp
+  vartypes/VarXML.cpp
+  vartypes/VarJSON.cpp
+  vartypes/VarTypesInstance.cpp
+  vartypes/VarTypesFactory.cpp
+  vartypes/xml/xmlParser.cpp
+
+  vartypes/primitives/VarStringVal.cpp
+  vartypes/primitives/VarBoolVal.cpp
+  vartypes/primitives/VarVal.cpp
+  vartypes/primitives/VarIntVal.cpp
+  vartypes/primitives/VarDoubleVal.cpp
+
+  vartypes/primitives/VarType.cpp
+  vartypes/primitives/VarBlob.cpp
+  vartypes/primitives/VarBool.cpp
+  vartypes/primitives/VarDouble.cpp
+  vartypes/primitives/VarExternal.cpp
+  vartypes/primitives/VarInt.cpp
+  vartypes/primitives/VarList.cpp
+  vartypes/primitives/VarQWidget.cpp
+  vartypes/primitives/VarSelection.cpp
+  vartypes/primitives/VarString.cpp
+  vartypes/primitives/VarStringEnum.cpp
+  vartypes/primitives/VarTrigger.cpp
+
+  vartypes/primitives/VarProtoBufferVal.cpp
+  vartypes/primitives/VarProtoBuffer.cpp
+  vartypes/primitives/VarAnyVal.cpp
+  vartypes/primitives/VarAny.cpp
 )
 
-# Windows DLL export
+set(CORE_HEADERS
+  vartypes/VarBase64.h
+  vartypes/VarNotifier.h
+  vartypes/VarTypes.h
+  vartypes/VarXML.h
+  vartypes/VarJSON.h
+  vartypes/VarTypesInstance.h
+  vartypes/VarTypesFactory.h
+  vartypes/VarTypesLoaderInterface.h
+  vartypes/xml/xmlParser.h
+
+  vartypes/primitives/VarVal.h
+  vartypes/primitives/VarStringVal.h
+  vartypes/primitives/VarBoolVal.h
+  vartypes/primitives/VarIntVal.h
+  vartypes/primitives/VarDoubleVal.h
+
+  vartypes/primitives/VarType.h
+  vartypes/primitives/VarBlob.h
+  vartypes/primitives/VarBool.h
+  vartypes/primitives/VarDouble.h
+  vartypes/primitives/VarExternal.h
+  vartypes/primitives/VarInt.h
+  vartypes/primitives/VarList.h
+  vartypes/primitives/VarQWidget.h
+  vartypes/primitives/VarSelection.h
+  vartypes/primitives/VarString.h
+  vartypes/primitives/VarStringEnum.h
+  vartypes/primitives/VarTrigger.h
+
+  vartypes/primitives/VarProtoBufferVal.h
+  vartypes/primitives/VarProtoBuffer.h
+  vartypes/primitives/VarAnyVal.h
+  vartypes/primitives/VarAny.h
+)
+
+add_library(vartypes-core SHARED ${CORE_SRCS} ${CORE_HEADERS})
+set_target_properties(vartypes-core PROPERTIES
+  VERSION   ${PROJECT_VERSION}
+  SOVERSION 1
+  OUTPUT_NAME vartypes-core
+)
+
+target_compile_features(vartypes-core PUBLIC cxx_std_17)
+
+target_include_directories(vartypes-core
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/primitives>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/gui>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vartypes/xml>
+    $<INSTALL_INTERFACE:include/vartypes>
+)
+
+target_link_libraries(vartypes-core
+  PUBLIC
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Xml
+)
+
 if(WIN32)
-  set_target_properties(${target} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  set_target_properties(vartypes-core PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-set (example_target vartype_example)
-set (example_dir example)
+# ═══════════════════════════════════════════════════════════════════════
+# vartypes-widgets: GUI library (tree view, item delegate, model)
+# ═══════════════════════════════════════════════════════════════════════
+if(BUILD_GUI)
+  set(WIDGET_SRCS
+    vartypes/gui/VarItem.cpp
+    vartypes/gui/VarItemDelegate.cpp
+    vartypes/gui/VarTreeModel.cpp
+    vartypes/gui/VarTreeView.cpp
+    vartypes/gui/VarTreeViewOptions.cpp
+  )
 
-add_executable(${example_target}
-               ${example_dir}/src/mainwindow.h
-               ${example_dir}/src/mainwindow.cpp
-               ${example_dir}/src/example.cpp)
+  set(WIDGET_HEADERS
+    vartypes/gui/VarItem.h
+    vartypes/gui/VarItemDelegate.h
+    vartypes/gui/VarTreeModel.h
+    vartypes/gui/VarTreeView.h
+    vartypes/gui/VarTreeViewOptions.h
+  )
 
-target_link_libraries(${example_target} PRIVATE ${target})
+  set(WIDGET_RC
+    vartypes/gui/icons/icons.qrc
+  )
 
-# ─── Tests ───
-option(BUILD_TESTS "Build unit tests" OFF)
+  add_library(vartypes-widgets SHARED ${WIDGET_SRCS} ${WIDGET_HEADERS} ${WIDGET_RC})
+  set_target_properties(vartypes-widgets PROPERTIES
+    VERSION   ${PROJECT_VERSION}
+    SOVERSION 1
+    OUTPUT_NAME vartypes-widgets
+  )
+
+  target_compile_features(vartypes-widgets PUBLIC cxx_std_17)
+
+  target_link_libraries(vartypes-widgets
+    PUBLIC
+      vartypes-core
+      Qt${QT_VERSION_MAJOR}::Widgets
+  )
+
+  if(WIN32)
+    set_target_properties(vartypes-widgets PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+  endif()
+endif()
+
+# ═══════════════════════════════════════════════════════════════════════
+# Backward-compatible combined 'vartypes' target
+# ═══════════════════════════════════════════════════════════════════════
+if(BUILD_GUI)
+  add_library(vartypes INTERFACE)
+  target_link_libraries(vartypes INTERFACE vartypes-core vartypes-widgets)
+else()
+  add_library(vartypes ALIAS vartypes-core)
+endif()
+
+# ═══════════════════════════════════════════════════════════════════════
+# Examples
+# ═══════════════════════════════════════════════════════════════════════
+if(BUILD_EXAMPLES)
+  if(NOT BUILD_GUI)
+    message(FATAL_ERROR "BUILD_EXAMPLES requires BUILD_GUI=ON")
+  endif()
+
+  add_executable(vartype_example
+    example/src/mainwindow.h
+    example/src/mainwindow.cpp
+    example/src/example.cpp
+  )
+  target_link_libraries(vartype_example PRIVATE vartypes)
+endif()
+
+# ═══════════════════════════════════════════════════════════════════════
+# Tests
+# ═══════════════════════════════════════════════════════════════════════
 if(BUILD_TESTS)
   enable_testing()
   find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
   add_subdirectory(tests)
 endif()
 
-INSTALL(FILES ${INSTALLABLE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vartypes)
+# ═══════════════════════════════════════════════════════════════════════
+# Install
+# ═══════════════════════════════════════════════════════════════════════
+include(GNUInstallDirs)
 
-INSTALL(FILES ${INSTALLABLE_DOCFILES} DESTINATION ${CMAKE_INSTALL_DOCDIR}/vartypes)
+install(FILES ${CORE_HEADERS}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vartypes
+)
 
-INSTALL(TARGETS ${target}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION bin
+if(BUILD_GUI)
+  install(FILES ${WIDGET_HEADERS}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vartypes/gui
+  )
+endif()
+
+install(TARGETS vartypes-core
+  EXPORT vartypes-targets
+  LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+if(BUILD_GUI)
+  install(TARGETS vartypes-widgets
+    EXPORT vartypes-targets
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
+endif()
+
+install(FILES README.md COPYING
+  DESTINATION ${CMAKE_INSTALL_DOCDIR}
 )
 

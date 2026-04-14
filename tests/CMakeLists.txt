@@ -1,5 +1,5 @@
 set(TEST_LIBS
-  vartypes
+  vartypes-core
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::Gui
   Qt${QT_VERSION_MAJOR}::Widgets
@@ -23,3 +23,9 @@ add_executable(test_xml test_xml.cpp)
 target_link_libraries(test_xml PRIVATE ${TEST_LIBS})
 add_test(NAME test_xml COMMAND test_xml)
 set_tests_properties(test_xml PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+# --- JSON round-trip test ---
+add_executable(test_json test_json.cpp)
+target_link_libraries(test_json PRIVATE ${TEST_LIBS} Qt${QT_VERSION_MAJOR}::Xml)
+add_test(NAME test_json COMMAND test_json)
+set_tests_properties(test_json PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
