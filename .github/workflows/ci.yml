@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, 'copilot/**' ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -31,15 +31,27 @@ jobs:
           - os: ubuntu-24.04
             qt_version: '6.5.3'
             qt_modules: ''
-          # macOS 14 (arm64)
+          # macOS 14 (arm64) with Qt5
+          - os: macos-14
+            qt_version: '5.15.2'
+            qt_modules: ''
+          # macOS 14 (arm64) with Qt6
           - os: macos-14
             qt_version: '6.5.3'
             qt_modules: ''
-          # macOS 15
+          # macOS 15 with Qt5
+          - os: macos-15
+            qt_version: '5.15.2'
+            qt_modules: ''
+          # macOS 15 with Qt6
           - os: macos-15
             qt_version: '6.5.3'
             qt_modules: ''
-          # Windows
+          # Windows with Qt5
+          - os: windows-latest
+            qt_version: '5.15.2'
+            qt_modules: ''
+          # Windows with Qt6
           - os: windows-latest
             qt_version: '6.5.3'
             qt_modules: ''
