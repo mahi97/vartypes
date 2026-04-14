@@ -118,8 +118,8 @@ else()
   set (CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /O2")
 endif()
 
-# On Windows, place all DLLs and EXEs in the same directory so that
-# executables can find the shared library at runtime without PATH changes.
+# Place all runtime binaries (executables, DLLs) in a common directory so that
+# on Windows, executables can find the shared library without PATH changes.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
