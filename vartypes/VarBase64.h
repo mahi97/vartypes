@@ -23,6 +23,7 @@
 #ifndef VARBASE64_H_
 #define VARBASE64_H_
 #include "xmlParser.h"
+#include <memory>
 namespace VarTypes {
   
   /*!
@@ -44,11 +45,11 @@ namespace VarTypes {
         static VarTypes::XMLParserBase64Tool* getTool();
     protected:
         VarBase64();
-        VarBase64(const VarBase64&);
-        VarBase64& operator= (const VarBase64&);
+        VarBase64(const VarBase64&) = delete;
+        VarBase64& operator= (const VarBase64&) = delete;
     private:
         static VarBase64* pinstance;
-        VarTypes::XMLParserBase64Tool * tool;
+        std::unique_ptr<VarTypes::XMLParserBase64Tool> tool;
   };
 };
 #endif /*VARBASE64_H_*/

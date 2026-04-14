@@ -15,27 +15,27 @@
 #include "VarTypesInstance.h"
 namespace VarTypes {
   
-  VarTypesInstance* VarTypesInstance::pinstance = 0;// initialize pointer
+  VarTypesInstance* VarTypesInstance::pinstance = nullptr;
   
   VarTypesFactoryPtr VarTypesInstance::getFactory ()
   {
-    if (pinstance == 0)  // is it the first call?
+    if (pinstance == nullptr)
     {
-      pinstance = new VarTypesInstance(); // create sole instance
+      pinstance = new VarTypesInstance();
     }
-    if (pinstance->_factory.get()==0) {
+    if (pinstance->_factory.get()==nullptr) {
       pinstance->_factory= VarTypesFactoryPtr(new VarTypesFactory());
     }
-    return pinstance->_factory; // address of sole instance
+    return pinstance->_factory;
   }
   
   bool VarTypesInstance::setFactory (VarTypesFactoryPtr factory)
   {
-    if (pinstance == 0)  // is it the first call?
+    if (pinstance == nullptr)
     {
-      pinstance = new VarTypesInstance(); // create sole instance
+      pinstance = new VarTypesInstance();
     }
-    if (pinstance->_factory.get()==0) {
+    if (pinstance->_factory.get()==nullptr) {
       factory->registerUserVarTypes();
       pinstance->_factory = factory;
       return true;

@@ -22,19 +22,19 @@
 #include "VarBase64.h"
 
 namespace VarTypes {
-  VarBase64* VarBase64::pinstance = 0;// initialize pointer
-  
+  VarBase64* VarBase64::pinstance = nullptr;
+
   XMLParserBase64Tool* VarBase64::getTool ()
   {
-    if (pinstance == 0)  // is it the first call?
+    if (pinstance == nullptr)
     {
-      pinstance = new VarBase64; // create sole instance
+      pinstance = new VarBase64;
     }
-    return pinstance->tool; // address of sole instance
+    return pinstance->tool.get();
   }
-  
+
   VarBase64::VarBase64()
   {
-    tool = new XMLParserBase64Tool();
+    tool = std::make_unique<XMLParserBase64Tool>();
   }
 };
