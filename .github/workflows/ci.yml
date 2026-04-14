@@ -31,19 +31,15 @@ jobs:
           - os: ubuntu-24.04
             qt_version: '6.5.3'
             qt_modules: ''
-          # macOS 14 (arm64) with Qt5
-          - os: macos-14
+          # macOS 13 (x86_64) with Qt5 — Qt 5.15.2 has no arm64 macOS binaries
+          - os: macos-13
             qt_version: '5.15.2'
             qt_modules: ''
           # macOS 14 (arm64) with Qt6
           - os: macos-14
             qt_version: '6.5.3'
             qt_modules: ''
-          # macOS 15 with Qt5
-          - os: macos-15
-            qt_version: '5.15.2'
-            qt_modules: ''
-          # macOS 15 with Qt6
+          # macOS 15 (arm64) with Qt6
           - os: macos-15
             qt_version: '6.5.3'
             qt_modules: ''
