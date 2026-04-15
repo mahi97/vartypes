@@ -104,6 +104,7 @@ std::string xml = VarXML::getXML(world);
 
 ## Documentation
 
+- [Changelog](CHANGELOG.md)
 - [Build and Porting Guide](docs/build_and_porting.md)
 - [Serialization Design](docs/serialization_design.md)
 - [Data Migration Notes](docs/data_migration_notes.md)
@@ -119,6 +120,11 @@ std::string xml = VarXML::getXML(world);
 | Ubuntu 24.04 | ✅ | ✅ |
 | macOS 14/15 (arm64) | — | ✅ |
 | Windows | ✅ | ✅ |
+
+## Authors
+
+- **Stefan Zickler** — Original author (2007–2015) — [szickler.net](http://szickler.net)
+- **Mohammad Mahdi Rahimi (mahi97)** — macOS/C++11 fixes, modernization (2018–present) — [github.com/mahi97](https://github.com/mahi97)
 
 ## License
 
